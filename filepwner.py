@@ -21,10 +21,9 @@ from argparse import RawTextHelpFormatter
 #   Parse shell upload dir from response for dynamic names
 #   Add custom injection markers
 #   Catch timeouts
-#   Double extensions with random case
-#   Overflow module
 #   htaccess module
 #   .COM payload
+#   Add --level
 
 # Set of colors
 red = '\u001b[31;1m'
@@ -242,7 +241,7 @@ def check_shell(url):
     else: 
         return False
 
-def upload(request_file, session, file_data, file_extension, file_content_type, timeout=20):
+def upload(request_file, session, file_data, file_name, file_content_type, timeout=20):
     global options
 
     time.sleep(options.rate_limit)
@@ -258,8 +257,6 @@ def upload(request_file, session, file_data, file_extension, file_content_type, 
             error("Inject point *content* not present in the request file")
 
     file_data_new = decoded_data
-
-    file_name = generate_random_string(10) + file_extension
 
     content, headers, host, path = parse_request_file(request_file)
     content = content.replace("*filename*", file_name)
@@ -507,11 +504,11 @@ def upload(request_file, session, file_data, file_extension, file_content_type, 
             
         return response, session, content_type_header, headers, url
 
-def upload_and_validate(request_file, session, file_data, file_extension, mimetype, message, expect_interaction=True, real_extension=None):
+def upload_and_validate(request_file, session, file_data, file_name, mimetype, message, expect_interaction=True, real_extension=None):
     global options
 
     content, headers, host, path = parse_request_file(request_file)
-    response, session, headers, url, file_name = upload(request_file, session, file_data, file_extension, mimetype)
+    response, session, headers, url, file_name = upload(request_file, session, file_data, file_name, mimetype)
     if (real_extension != None): file_name = (file_name.split(".")[0]) + real_extension
     upload_url = f"http://{host}{options.upload_dir}"
     if (options.global_verbosity < 2): show_progress_bar()
@@ -586,7 +583,8 @@ def main():
         "double_extension",
         "double_extension_random_case",
         "reverse_double_extension",
-        "null_byte_cutoff"
+        "null_byte_cutoff",
+        "overflow_cutoff",
     ]
 
     modules = importlib.import_module("modules")
