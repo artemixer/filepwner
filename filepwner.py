@@ -20,6 +20,9 @@ from argparse import RawTextHelpFormatter
 #TODO
 #   Parse shell upload dir from response for dynamic names
 #   Add custom injection markers
+#   Add different php types
+#   Correct progress bar display
+#   Add more file types (pdf...)
 
 # Set of colors
 red = '\u001b[31;1m'
@@ -54,6 +57,9 @@ if (not options.upload_dir.startswith("/")):
         options.upload_dir = "/" + options.upload_dir
 if (not options.upload_dir.endswith("/")):
     options.upload_dir = options.upload_dir + "/" 
+
+
+
 
 def error(message):
     print(f"{red}[!!!]{reset}  {message}")
@@ -115,7 +121,7 @@ def banner():
     print("-----------------------------------------------------------------------")     
     print()      
 
-def progress_bar(current, max, bar_length=30):
+def draw_progress_bar(current, max, bar_length=30):
     progress = current / max
     block = int(round(bar_length * progress))
     progress_bar = f"[{'=' * block}{' ' * (bar_length - block)}] (" + str(current) + "/" + str(max) + ")"
@@ -123,6 +129,21 @@ def progress_bar(current, max, bar_length=30):
         print(progress_bar, end='\r') 
     else:
         print(progress_bar)                                          
+
+def set_progress_bar(max):
+    progress_bar = {
+        "current": 0,
+        "max": max
+    }
+
+    variations.progress_bar = progress_bar
+
+def show_progress_bar():
+    variations.progress_bar["current"] += 1
+    draw_progress_bar(variations.progress_bar["current"], variations.progress_bar["max"])
+    return 
+
+
 
 def GET(url):
     global options
@@ -482,6 +503,7 @@ def upload_and_validate(request_file, session, file_data, file_extension, mimety
     response, session, headers, url, file_name = upload(request_file, session, file_data, file_extension, mimetype)
     if (real_extension != None): file_name = (file_name.split(".")[0]) + real_extension
     upload_url = f"http://{host}{options.upload_dir}"
+    if (options.global_verbosity < 2): show_progress_bar()
     if (check_success(response)):
         if expect_interaction: success(message + "\n")
 
@@ -494,7 +516,7 @@ def upload_and_validate(request_file, session, file_data, file_extension, mimety
                 debug((upload_url + file_name + "?test=whoami"), 1)
                 error("Shell does not seem to be interractable, make sure your upload directory is correct")
 
-    failure(message)
+    failure(message, 2)
     return session
 
 def main():
