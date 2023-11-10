@@ -21,6 +21,7 @@ from argparse import RawTextHelpFormatter
 #   Parse shell upload dir from response for dynamic names
 #   Add custom injection markers
 #   Catch timeouts
+#   Double extensions with random case
 #   Overflow module
 #   htaccess module
 #   .COM payload
@@ -143,6 +144,17 @@ def show_progress_bar():
     variations.progress_bar["current"] += 1
     draw_progress_bar(variations.progress_bar["current"], variations.progress_bar["max"])
     return 
+
+def capitalise_random(string):
+    characters = list(string)
+    length = len(characters)
+    index_to_capitalize = random.randint(0, length - 1)
+    at_least_one_capitalized = False
+    for i in range(length):
+        if characters[i].isalpha():
+            characters[i] = characters[i].upper() if i == index_to_capitalize or not at_least_one_capitalized else characters[i].lower()
+            at_least_one_capitalized = True
+    return ''.join(characters)
 
 
 
@@ -565,17 +577,6 @@ def main():
         exit(1)
             
 
-
-    
-    #Get baseline response
-    '''
-    info("Getting baseline response from upload dir", 3)
-    nonexistent_file = upload_url + generate_random_string(20) + ".php"
-    response = GET(nonexistent_file)
-    baseline_response = [response.status_code, response.text]
-    debug(baseline_response, 3)
-    '''
-
     #Loop through modules
     print()
     info("Starting module execution")
@@ -583,6 +584,7 @@ def main():
     active_modules = [
         "mimetype_spoofing",
         "double_extension",
+        "double_extension_random_case",
         "reverse_double_extension",
         "null_byte_cutoff"
     ]
