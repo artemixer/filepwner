@@ -1,7 +1,8 @@
 extensions = {
-    "normal" : ["jpg", "jpeg", "png", "gif", "pdf", "mp3", "mp4", "txt"],
-    "php": ["php", "php2", "php3", "php4", "php5", "php6", "php7", "phps", "phps", "pht", "phtm",
-    "phtml", "pgif", "htaccess", "phar", "inc", "hphp", "ctp", "module"]
+    "normal": ["jpg", "jpeg", "png", "gif", "pdf", "mp3", "mp4", "txt"],
+
+    "php": ["php", "php3", "phar", "phtml", "php5", "php6", "php7", "phps", 
+    "pht", "phtm","php4", "pgif", "php2", "inc", "hphp", "ctp", "module"]
 }
 null_bytes = [
     '\x00',
@@ -118,4 +119,10 @@ magic_bytes = {
     "java": b'public class',
     "php": b'<?php',
     "css": b'/* CSS */',
+}
+
+# Operational stuff
+progress_bar = {
+    "current": 0,
+    "max": max
 }
