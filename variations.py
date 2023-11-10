@@ -1,5 +1,5 @@
 extensions = {
-    "normal": ["jpg", "jpeg", "png", "gif", "pdf", "mp3", "mp4", "txt"],
+    "normal": ["jpg", "jpeg", "png", "gif", "pdf", "mp3", "mp4", "txt", "csv"],
 
     "php": ["php", "php3", "phar", "phtml", "php5", "php6", "php7", "phps", 
     "pht", "phtm","php4", "pgif", "php2", "inc", "hphp", "ctp", "module"]
@@ -44,6 +44,7 @@ mimetypes = {
     "mp3": "audio/mpeg", 
     "mp4": "video/mp4",
     "txt": "text/plain",
+    "csv": "text/csv",
 }
 magic_bytes = {
     "jpg": b'\xFF\xD8\xFF\xE0',

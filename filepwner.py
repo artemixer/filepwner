@@ -20,12 +20,10 @@ from argparse import RawTextHelpFormatter
 #TODO
 #   Parse shell upload dir from response for dynamic names
 #   Add custom injection markers
-#   Add different php types
-#   Add more file types (pdf...)
 #   Catch timeouts
 #   Overflow module
 #   htaccess module
-#   Limit module iterations if over
+#   .COM payload
 
 # Set of colors
 red = '\u001b[31;1m'
