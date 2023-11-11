@@ -51,7 +51,7 @@ The entire response body will be scanned using the regex provided and if it matc
     --timeout             Number of seconds the request will wait before timing out (Default: 20)
                           Usage: -t / --timeout
     --print-response      If set, HTTP response will be printed on the screen
-                          Usage: -v / --verbose
+                          Usage: --print-response
 </details>                  
   
 ## Customisation
@@ -63,4 +63,8 @@ To add a module simply add a function with your desired functionality to `module
 To add a new file extension add the sample.{ext} file to `assets/sample_files`, then add the extension and its mimetype to `variations.py`
 
 ## Test targets
-For testing purposes I also included sample .php scripts (`/test_targets`) to emulate the behaviour of upload forms. If you wish to gain a better understanding of the soft or simply want to test if it works, feel free to run tests against them.
+For testing purposes I also included sample .php scripts (`/test_targets`) to emulate the behaviour of upload forms. If you wish to gain a better understanding of the soft or simply want to test if it works, feel free to run tests against them.  
+
+<br/>
+<br/>
+<b>Feel free to open pull requests and issues, I will do my best to resolve or at least answer all of them</b>

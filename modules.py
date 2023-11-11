@@ -19,12 +19,12 @@ def mimetype_spoofing(request_file, session, options, accepted_extensions):
 
             file_extension = f".{php_extension}"
             file_name = generate_random_string(10) + file_extension
-            message = f"{simple_shell_path}, {file_extension}, {mimetype}, magic bytes: OFF"
+            message = f"{file_name}, {mimetype}, magic bytes: OFF"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype, message)
 
             #with magic bytes
             file_data = variations.magic_bytes[extension] + file_data
-            message = f"{simple_shell_path}, {file_extension}, {mimetype}, magic bytes: ON"
+            message = f"{file_name}, {mimetype}, magic bytes: ON"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype, message)
     
     
@@ -46,16 +46,16 @@ def double_extension(request_file, session, options, accepted_extensions):
             #with php mimetype
             file_extension = f".{extension}.{php_extension}"
             file_name = generate_random_string(10) + file_extension
-            message = f"{simple_shell_path}, {file_extension}, {mimetype_php}, magic bytes: OFF"
+            message = f"{file_name}, {mimetype_php}, magic bytes: OFF"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_php, message)
 
             #with original mimetype bytes
-            message = f"{simple_shell_path}, {file_extension}, {mimetype_original}, magic bytes: OFF"
+            message = f"{file_name}, {mimetype_original}, magic bytes: OFF"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message)
 
             #with magic bytes and original mimetype
             file_data = variations.magic_bytes[extension] + file_data
-            message = f"{simple_shell_path}, {file_extension}, {mimetype_original}, magic bytes: ON"
+            message = f"{file_name}, {mimetype_original}, magic bytes: ON"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message)
 
 def double_extension_random_case(request_file, session, options, accepted_extensions):
@@ -79,16 +79,16 @@ def double_extension_random_case(request_file, session, options, accepted_extens
             #with php mimetype
             file_extension = f".{extension}.{php_extension}"
             file_name = generate_random_string(10) + file_extension
-            message = f"{simple_shell_path}, {file_extension}, {mimetype_php}, magic bytes: OFF"
+            message = f"{file_name}, {mimetype_php}, magic bytes: OFF"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_php, message)
 
             #with original mimetype bytes
-            message = f"{simple_shell_path}, {file_extension}, {mimetype_original}, magic bytes: OFF"
+            message = f"{file_name}, {mimetype_original}, magic bytes: OFF"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message)
 
             #with magic bytes and original mimetype
             file_data = variations.magic_bytes[extension] + file_data
-            message = f"{simple_shell_path}, {file_extension}, {mimetype_original}, magic bytes: ON"
+            message = f"{file_name}, {mimetype_original}, magic bytes: ON"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message)
 
 
@@ -111,16 +111,16 @@ def reverse_double_extension(request_file, session, options, accepted_extensions
             #with php mimetype
             file_extension = f".{php_extension}.{extension}"
             file_name = generate_random_string(10) + file_extension
-            message = f"{simple_shell_path}, {file_extension}, {mimetype_php}, magic bytes: OFF"
+            message = f"{file_name}, {mimetype_php}, magic bytes: OFF"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_php, message, expect_interaction=False)
 
             #with original mimetype bytes
-            message = f"{simple_shell_path}, {file_extension}, {mimetype_original}, magic bytes: OFF"
+            message = f"{file_name}, {mimetype_original}, magic bytes: OFF"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False)
 
             #with magic bytes and original mimetype
             file_data = variations.magic_bytes[extension] + file_data
-            message = f"{simple_shell_path}, {file_extension}, {mimetype_original}, magic bytes: ON"
+            message = f"{file_name}, {mimetype_original}, magic bytes: ON"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False)
 
 def null_byte_cutoff(request_file, session, options, accepted_extensions):
@@ -145,16 +145,16 @@ def null_byte_cutoff(request_file, session, options, accepted_extensions):
                 #with php mimetype
                 file_extension = f".{php_extension}{null_byte}.{extension}"
                 file_name = generate_random_string(10) + file_extension
-                message = f"{simple_shell_path}, {file_extension}, {mimetype_php}, magic bytes: OFF"
+                message = f"{file_name}, {mimetype_php}, magic bytes: OFF"
                 session = upload_and_validate(request_file, session, file_data, file_name, mimetype_php, message, expect_interaction=False, real_extension=f".{php_extension}")
 
                 #with original mimetype bytes
-                message = f"{simple_shell_path}, {file_extension}, {mimetype_original}, magic bytes: OFF"
+                message = f"{file_name}, {mimetype_original}, magic bytes: OFF"
                 session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False, real_extension=f".{php_extension}")
 
                 #with magic bytes and original mimetype
                 file_data = variations.magic_bytes[extension] + file_data
-                message = f"{simple_shell_path}, {file_extension}, {mimetype_original}, magic bytes: ON"
+                message = f"{file_name}, {mimetype_original}, magic bytes: ON"
                 session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False, real_extension=f".{php_extension}")
 
 def overflow_cutoff(request_file, session, options, accepted_extensions):
@@ -178,14 +178,14 @@ def overflow_cutoff(request_file, session, options, accepted_extensions):
                 #with php mimetype
                 file_extension = f".{php_extension}.{extension}"
                 file_name = ("A" * (overflow_length - (len(php_extension) + 1))) + file_extension
-                message = f"{simple_shell_path}, {file_extension}, {mimetype_php}, magic bytes: OFF"
+                message = f"{file_name}, {mimetype_php}, magic bytes: OFF"
                 session = upload_and_validate(request_file, session, file_data, file_name, mimetype_php, message, expect_interaction=False, real_extension=f".{php_extension}")
 
                 #with original mimetype bytes
-                message = f"{simple_shell_path}, {file_extension}, {mimetype_original}, magic bytes: OFF"
+                message = f"{file_name}, {mimetype_original}, magic bytes: OFF"
                 session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False, real_extension=f".{php_extension}")
 
                 #with magic bytes and original mimetype
                 file_data = variations.magic_bytes[extension] + file_data
-                message = f"{simple_shell_path}, {file_extension}, {mimetype_original}, magic bytes: ON"
+                message = f"{file_name}, {mimetype_original}, magic bytes: ON"
                 session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False, real_extension=f".{php_extension}")

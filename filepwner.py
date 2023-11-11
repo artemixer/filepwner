@@ -49,8 +49,8 @@ parser.add_argument('-d', "--upload-dir", type=str, dest="upload_dir", default=F
 parser.add_argument("--rate-limit", type=float, dest="rate_limit", default=0.1,help=f'Set rate-limiting with seconds between each request.\nUsage: {blue}--rate-limit {reset}')
 #parser.add_argument("--proxy", type=str, dest="proxy_num", default="optional",help=f"Channel the HTTP requests via proxy client (i.e Burp Suite).\nUsage: {blue}-p / --proxy {reset}{red_italic}http://127.0.0.1:8080{reset}")
 parser.add_argument('-v', "--verbose", type=int, dest="global_verbosity", default=0,help=f"If set, details about the test will be printed on the screen\nUsage:{blue} -v / --verbose{reset}")
-parser.add_argument("--timeout", action="store_true", dest="timeout", default=20, help=f"Number of seconds the request will wait before timing out (Default: 20)\nUsage:{blue} -t / --timeout{reset}")
-parser.add_argument("--print-response", action="store_true", dest="response", default=False,help=f"If set, HTTP response will be printed on the screen\nUsage:{blue} -v / --verbose{reset}")
+parser.add_argument("--timeout", action="store_true", dest="timeout", default=20, help=f"Number of seconds the request will wait before timing out (Default: 20)\nUsage: {blue}--timeout{reset}")
+parser.add_argument("--print-response", action="store_true", dest="print_response", default=False,help=f"If set, HTTP response will be printed on the screen\nUsage: {blue}--print-response{reset}")
 
 options = parser.parse_args()
 
@@ -95,7 +95,7 @@ def debug(message, verbosity=None):
     if (verbosity != None):
         if (verbosity > options.global_verbosity):
             return
-    print("[?] ", end="")
+
     print(message)
 
 def exit_success(url):
@@ -309,200 +309,11 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
         if (response.status_code == 404):
             error(f"404 status on requested URL {url}")
 
-        #print(response.text)
+        if (options.print_response): print(response.text)
         return response, session, headers, url, file_name
                 
-  
-    elif "application/json" in str(headers):
-        # Extract the JSON data from the request body
-        match = re.search(r'(\r\n\r\n|\n\n)(\{.*\})', content, re.DOTALL)
-        if match:
-            json_data = match.group(2)
-            try:
-                json_data = json_data.replace("\\", "\\\\")
-                json_data = json_data.replace(".\\", ".\\\\")
-
-                json_obj = json.loads(json_data)
-
-                data = json_obj
-
-                temp_data = str(data)
-
-                try:
-                    for content_type, key in variations.content_types.items():
-                        if content_type in temp_data:
-                            data[key] = content_type_header.rstrip()
-                            break
-
-                    if '*mimetype*' in str(data).lower():
-                        temp_data = temp_data.replace("*mimetype*", content_type_header)
-                        temp_data = temp_data.replace("'", '"')
-                        data = json.loads(temp_data)
-
-                except:
-                    if isinstance(file_data_new, str):
-                        file_data_new = file_data_new.encode("latin-1")
-                        file_data_new = base64.b64encode(file_data_new)
-                        file_data_new = file_data_new.decode("latin-1")
-                        content = content.replace("*content*", file_data_new.strip())
-
-                    else:
-                        if isinstance(file_data_new, bytes):
-                            file_data_new = file_data_new.decode('latin-1')
-
-                        content = content.replace("*content*", file_data_new)
-
-                        # Create a dictionary with the file data and other fields
-                data = {
-                    **data
-                }
-                
-                try:
-                    response = session.post(url, json=data, headers=headers, proxies=proxies,
-                                        allow_redirects=False,
-                                        verify=tls)  # Sending a POST request to the url with the files, headers, and data provided.
-                except SSLError:
-                    url_http = url.replace('https://', 'http://')  # Change protocol to http
-                    print(f"{red}[WARN]{reset} SSL error occurred. Trying HTTP...")  
-                    response = session.post(url_http, json=data, headers=headers, proxies=proxies,
-                                        allow_redirects=False)  # Sending a POST request to the url with the files, headers, and data provided.
-                    
-                return response, session, content_type_header, headers, url
-
-            except json.JSONDecodeError as e:
-                print(e)
-                print("Error decoding JSON data.")
-                exit(1)
-        else:
-            # Attempting the second match
-            second_match = re.search(r'(\{.*\})', content, re.DOTALL)
-            if second_match:
-                json_data = second_match.group(1)
-
-                json_data = json_data.replace("\\", "\\\\")
-                json_data = json_data.replace(".\\", ".\\\\")
-
-                json_obj = json.loads(json_data)
-
-                data = json_obj
-
-                temp_data = str(data)
-
-                try:
-                    for content_type, key in variations.content_types.items():
-                        if content_type in temp_data:
-                            data[key] = content_type_header.rstrip()
-                            break
-
-                        if '*mimetype*' in str(data).lower():
-                            temp_data = temp_data.replace("*mimetype*", content_type_header)
-                            temp_data = temp_data.replace("'", '"')
-                            data = json.loads(temp_data)
-
-                except:
-                    if isinstance(file_data_new, str):
-                        file_data_new = file_data_new.encode("latin-1")
-                        file_data_new = base64.b64encode(file_data_new)
-                        file_data_new = file_data_new.decode("latin-1")
-                        content = content.replace("*content*", file_data_new.strip())
-
-                    else:
-                        if isinstance(file_data_new, bytes):
-                            file_data_new = file_data_new.decode('latin-1')
-
-                        content = content.replace("*content*", file_data_new)
-
-                        # Create a dictionary with the file data and other fields
-                data = {
-                    **data
-                }
-                
-                try:
-                    response = session.post(url, json=data, headers=headers, proxies=proxies,
-                                            allow_redirects=False,
-                                            verify=tls)  # Sending a POST request to the url with the files, headers, and data provided.
-                except SSLError:
-                    url_http = url.replace('https://', 'http://')  # Change protocol to http
-                    print(f"{red}[WARN]{reset} SSL error occurred. Trying HTTP...")  
-                    response = session.post(url_http, json=data, headers=headers, proxies=proxies,
-                        allow_redirects=False)  # Sending a POST request to the url with the files, headers, and data provided.
-                    
-                return response, session, content_type_header, headers, url
-
-            else:
-                # Handle the case where no match was found
-                raise Exception("No JSON data found")
-
-    elif "application/xml" in str(headers):
-
-        # Extract the XML data from the request body
-        match = re.search(r'(\r\n\r\n|\n\n)(<.*>)', content, re.DOTALL)
-        if match:
-            xml_data = match.group(2)
-            try:
-                data = xml_data
-
-            except ET.ParseError:
-                print("Error parsing XML data")
-                exit(1)
-
-        root = ET.fromstring(data)
-
-        for content_type, key in variations.content_types.items():
-            if content_type in data:
-                content_type_element = root.find(f'.//{key}')
-                content_type_element.text = content_type_header.rstrip()
-                data[key] = content_type_header.rstrip()
-                break
-        else:
-            print("Something went wrong...")
-            exit(1)
-
-        if not isinstance(data, str):
-            data = ET.tostring(root, encoding='latin-1').decode('latin-1')
-        
-        try:
-            response = session.post(url, data=data, headers=headers, proxies=proxies,
-                                allow_redirects=False,
-                                verify=tls)  # Sending a POST request to the url with the files, headers, and data provided.
-        except SSLError:
-            url_http = url.replace('https://', 'http://')  # Change protocol to http
-            print(f"{red}[WARN]{reset} SSL error occurred. Trying HTTP...")  
-            response = session.post(url_http, data=data, headers=headers, proxies=proxies,
-                                allow_redirects=False)  # Sending a POST request to the url with the files, headers, and data provided.
-
-        return response, session, content_type_header, headers, url
-
-    elif "XMLHttpRequest" in str(headers):
-
-        headers['Content-Type'] = content_type_header.rstrip()
-
-        try:
-            response = session.post(url, data=content, headers=headers, proxies=proxies,
-                                    allow_redirects=False,
-                                    verify=tls)  # Sending a POST request to the url with the files, headers, and data provided.
-        except SSLError:
-            url_http = url.replace('https://', 'http://')  # Change protocol to http
-            print(f"{red}[WARN]{reset} SSL error occurred. Trying HTTP...")  
-            response = session.post(url_http, data=content, headers=headers, proxies=proxies,
-                                allow_redirects=False)  # Sending a POST request to the url with the files, headers, and data provided.
-            
-        return response, session, content_type_header, headers, url
-
     else:
-        headers['Content-Type'] = content_type_header.rstrip()
-
-        try:
-            response = session.post(url, data=content, headers=headers, proxies=proxies,
-                                    allow_redirects=False,
-                                    verify=tls)  # Sending a POST request to the url with the files, headers, and data provided.
-        except SSLError:    
-            url_http = url.replace('https://', 'http://')  # Change protocol to http
-            print(f"{red}[WARN]{reset} SSL error occurred. Trying HTTP...")  
-            response = session.post(url_http, data=content, headers=headers, proxies=proxies,
-                                allow_redirects=False)  # Sending a POST request to the url with the files, headers, and data provided.
-            
-        return response, session, content_type_header, headers, url
+        error("Cannot parse request file")
 
 def upload_and_validate(request_file, session, file_data, file_name, mimetype, message, expect_interaction=True, real_extension=None):
     global options
