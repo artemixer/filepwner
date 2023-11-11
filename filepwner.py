@@ -51,6 +51,7 @@ parser.add_argument("--rate-limit", type=float, dest="rate_limit", default=0.1,h
 parser.add_argument('-v', "--verbose", type=int, dest="global_verbosity", default=0,help=f"If set, details about the test will be printed on the screen\nUsage:{blue} -v / --verbose{reset}")
 parser.add_argument("--timeout", action="store_true", dest="timeout", default=20, help=f"Number of seconds the request will wait before timing out (Default: 20)\nUsage: {blue}--timeout{reset}")
 parser.add_argument("--print-response", action="store_true", dest="print_response", default=False,help=f"If set, HTTP response will be printed on the screen\nUsage: {blue}--print-response{reset}")
+parser.add_argument("--status-code", type=str, dest="status_codes", default="200",help=f"HTTP status codes which will be treated as acceptable, default 200\nUsage: {blue}--status-code 200,301{reset}")
 
 options = parser.parse_args()
 
@@ -228,11 +229,12 @@ def test_accepted_formats(request_file, session, extensions_array):
     return accepted_extensions
 
 def check_success(response):
-    if (response.status_code != 200):
+    global options
+
+    if (response.status_code not in [int(x) for x in options.status_codes.split(",")]):
         debug(response.text)
         error(f"Response status code: {response.status_code}")
 
-    global options
     if (options.true_regex != False):
         return bool(re.search(options.true_regex, response.text))
 
@@ -314,6 +316,7 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
         if (response.status_code == 404):
             error(f"404 status on requested URL {url}")
 
+        if (options.print_response): print(response.status_code)
         if (options.print_response): print(response.text)
         return response, session, headers, url, file_name
                 
