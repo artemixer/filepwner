@@ -24,6 +24,7 @@ from argparse import RawTextHelpFormatter
 #   htaccess module
 #   .COM payload
 #   Add --level
+#   prints, cli args and default shell loc
 
 # Set of colors
 red = '\u001b[31;1m'
