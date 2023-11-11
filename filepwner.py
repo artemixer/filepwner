@@ -342,11 +342,11 @@ def upload_and_validate(request_file, session, file_data, file_name, mimetype, m
     upload_url = f"http://{host}{options.upload_dir}"
     if (options.global_verbosity < 2 and message != None): show_progress_bar()
     if (check_success(response)):
-        if expect_interaction: success(message + "\n")
+        if expect_interaction and message != None: success(message + "\n")
 
         check_result = check_shell(upload_url + file_name, more_info=True)
         if (check_result == True):
-            if not expect_interaction: success(message + "\n")
+            if not expect_interaction and message != None: success(message + "\n")
             success("Shell confirmed interactable")
             exit_success(upload_url + file_name)
         else:
