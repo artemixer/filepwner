@@ -219,7 +219,8 @@ def test_accepted_formats(request_file, session, extensions_array):
     accepted_extensions = list()
     for extension in extensions_array:
         with open(f"assets/sample_files/sample.{extension}", 'rb') as file: file_data = file.read()
-        response, session, headers, url, file_name = upload(request_file, session, file_data, f".{extension}", variations.mimetypes[extension])
+        file_name = generate_random_string(10) + f".{extension}"
+        response, session, headers, url, file_name = upload(request_file, session, file_data, file_name, variations.mimetypes[extension])
         if (check_success(response)):
             success(f"Filetype {extension} is accepted")
             accepted_extensions.append(extension)
@@ -268,7 +269,7 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
     content, headers, host, path = parse_request_file(request_file)
     content = content.replace("*filename*", file_name)
 
-    url = f"http://{host}/{path}"
+    url = f"https://{host}/{path}"
 
     try:
         if isinstance(content, list):
@@ -305,7 +306,7 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
         multipart_data = pattern.sub(f'filename="{file_name}" \nContent-Type: {file_content_type}', data)
 
         try:
-            response = session.post(url, data=multipart_data, headers=headers,allow_redirects=False, verify=False, timeout=options.timeout)  # Sending a POST request to the url with the files, headers, and data provided.
+            response = session.post(url, data=multipart_data, headers=headers,allow_redirects=True, verify=True, timeout=options.timeout)  # Sending a POST request to the url with the files, headers, and data provided.
         except SSLError:
 
             url_http = url.replace('https://', 'http://')  # Change protocol to http
@@ -316,7 +317,8 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
         if (response.status_code == 404):
             error(f"404 status on requested URL {url}")
 
-        if (options.print_response): print(response.status_code)
+        if (options.print_response): debug(response.status_code, 3)
+        if (options.print_response): debug(response.status_code, 3)
         if (options.print_response): print(response.text)
         return response, session, headers, url, file_name
                 
@@ -390,8 +392,7 @@ def main():
                 else:
                     debug((upload_url + file_name + "?test=whoami"), 1)
                     warning("Shell does not seem to be interractable, make sure your upload directory is correct")
-        
-        exit(1)
+
             
 
     #Loop through modules
