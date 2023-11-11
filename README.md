@@ -1,5 +1,5 @@
 # filepwner
-**filepwner** is an exploitation tool which automates testing file payloads on upload forms. This is acheived by manipulating file name, file content and file Content-Type values in the request.
+**filepwner** is an exploitation tool which automates testing file payloads on upload forms.
 
 
 ![filepwner_demo](https://github.com/artemixer/filepwner/assets/109953672/8c75a49f-0e55-483c-9a9a-4fc046c507d3)
@@ -8,7 +8,7 @@
 ```
 git clone https://github.com/artemixer/filepwner
 cd filepwner
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
   
 ## Usage
@@ -58,9 +58,9 @@ The entire response body will be scanned using the regex provided and if it matc
 When creating this tool I had customisations in mind, so I did my best to keep everything as cookie-cutter as possible. 
 You are able to add your own modules/rules for running tests as well as adding new file extensions.
 
-To add a module simply add a function with your desired functionality to `modules.py` then include the function by name into the list "active_modules" in `filepwner.py`
+To add a module simply add a function with your desired functionality to `modules.py` then add the function by name into the list "active_modules" in `variations.py`
 
-To add a new file extension add the sample.{ext} file to `assets/sample_files`, then add the extension and its mimetype to `variations.py`
+To add a new file extension add the sample.{ext} file to `assets/sample_files`, then add the extension and its mimetype/magic bytes to `variations.py`
 
 ## Test targets
 For testing purposes I also included sample .php scripts (`/test_targets`) to emulate the behaviour of upload forms. If you wish to gain a better understanding of the soft or simply want to test if it works, feel free to run tests against them.  

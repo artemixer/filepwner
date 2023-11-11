@@ -14,7 +14,7 @@ import requests
 import importlib
 from requests.exceptions import SSLError
 import json
-import variations as variations
+import variations
 from argparse import RawTextHelpFormatter
 
 #TODO
@@ -53,10 +53,11 @@ parser.add_argument("--rate-limit", type=float, dest="rate_limit", default=0.1,h
 parser.add_argument('-v', "--verbose", type=int, dest="global_verbosity", default=0,help=f"If set, details about the test will be printed on the screen\nUsage:{blue} -v / --verbose{reset}")
 parser.add_argument("--timeout", action="store_true", dest="timeout", default=20, help=f"Number of seconds the request will wait before timing out (Default: 20)\nUsage: {blue}--timeout{reset}")
 parser.add_argument("--print-response", action="store_true", dest="print_response", default=False,help=f"If set, HTTP response will be printed on the screen\nUsage: {blue}--print-response{reset}")
-parser.add_argument("--status-code", type=str, dest="status_codes", default="200",help=f"HTTP status codes which will be treated as acceptable, default 200\nUsage: {blue}--status-code 200,301{reset}")
+parser.add_argument("--status-codes", type=str, dest="status_codes", default="200",help=f"HTTP status codes which will be treated as acceptable, default 200\nUsage: {blue}--status-code 200,301{reset}")
 parser.add_argument("--protocol", type=str, dest="protocol", default="https",help=f"Connection protocol to be used for uploads, default https\nUsage: {blue}--status-code https{reset}")
 parser.add_argument("--disable-redirects", action="store_true", dest="disable_redirects", default="https",help=f"If enabled, disables forms from redirecting requests\nUsage: {blue}--disable-redirects{reset}")
 parser.add_argument("--manual-check", action="store_true", dest="manual_check", default="https",help=f"If enabled, pauses the execution after each successful shell upload\nUsage: {blue}--manual-check{reset}")
+parser.add_argument("--disable-modules", type=str, dest="disable_modules", default=False,help=f"Disables specified modules\nUsage: {blue}--disable-modules " + ",".join(variations.active_modules) + f"{reset}")
 
 options = parser.parse_args()
 
@@ -122,7 +123,7 @@ def banner():
     print("██║     ██║███████╗███████╗██║     ╚███╔███╔╝██║ ╚████║███████╗██║  ██║")
     print("╚═╝     ╚═╝╚══════╝╚══════╝╚═╝      ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝")
     print()
-    print("v1.1")
+    print("v1.3")
     print()
     info("Disclaimer: The use of this tool and techniques should only be performed with proper authorization and consent from the targeted systems or networks. Unauthorized use can lead to legal consequences. It is the responsibility of the user to ensure that the tool is used for its intended purpose and not for any malicious or illegal activities.")
     print()     
@@ -385,6 +386,11 @@ def main():
     if (options.upload_dir == False):
         warning("Upload location not set, defaulting to '/'")
 
+    if (options.disable_modules != False):
+        disabled_modules = options.disable_modules.split(",")
+        for module in disabled_modules:
+            del variations.active_modules[variations.active_modules.index(module)]
+
     variations.protocol = options.protocol
     session = requests.Session()
     content, headers, host, path = parse_request_file(options.request_file)
@@ -418,19 +424,10 @@ def main():
     #Loop through modules
     print()
     info("Starting module execution")
-    
-    active_modules = [
-        "mimetype_spoofing",
-        "double_extension",
-        "double_extension_random_case",
-        "reverse_double_extension",
-        "null_byte_cutoff",
-        "name_overflow_cutoff",
-    ]
 
     modules = importlib.import_module("modules")
 
-    for module in active_modules:
+    for module in variations.active_modules:
         getattr(modules, module)(options.request_file, session, options, accepted_extensions)
 
 

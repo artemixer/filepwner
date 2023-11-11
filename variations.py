@@ -1,4 +1,12 @@
 shell_path = "assets/shells/simple.php"
+active_modules = [
+    "mimetype_spoofing",
+    "double_extension",
+    "double_extension_random_case",
+    "reverse_double_extension",
+    "null_byte_cutoff",
+    "name_overflow_cutoff",
+]
 extensions = {
     "normal": ["jpg", "jpeg", "png", "gif", "pdf", "mp3", "mp4", "txt", "csv", "svg"],
 
