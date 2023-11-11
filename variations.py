@@ -1,3 +1,4 @@
+shell_path = "assets/shells/simple.php"
 extensions = {
     "normal": ["jpg", "jpeg", "png", "gif", "pdf", "mp3", "mp4", "txt", "csv", "svg"],
 
@@ -6,6 +7,7 @@ extensions = {
 }
 null_bytes = [
     '\x00',
+    ";",
     "%20",
     "%0a",
     "%00",
