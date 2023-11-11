@@ -53,7 +53,8 @@ parser.add_argument("--timeout", action="store_true", dest="timeout", default=20
 parser.add_argument("--print-response", action="store_true", dest="print_response", default=False,help=f"If set, HTTP response will be printed on the screen\nUsage: {blue}--print-response{reset}")
 parser.add_argument("--status-code", type=str, dest="status_codes", default="200",help=f"HTTP status codes which will be treated as acceptable, default 200\nUsage: {blue}--status-code 200,301{reset}")
 parser.add_argument("--protocol", type=str, dest="protocol", default="https",help=f"Connection protocol to be used for uploads, default https\nUsage: {blue}--status-code https{reset}")
-parser.add_argument("--disable-redirects", type=str, dest="disable_redirects", default="https",help=f"If enabled, disables forms from redirecting requests\nUsage: {blue}--disable-redirects{reset}")
+parser.add_argument("--disable-redirects", action="store_true", dest="disable_redirects", default="https",help=f"If enabled, disables forms from redirecting requests\nUsage: {blue}--disable-redirects{reset}")
+parser.add_argument("--manual-check", action="store_true", dest="manual_check", default="https",help=f"If enabled, pauses the execution after each successful shell upload\nUsage: {blue}--manual-check{reset}")
 
 options = parser.parse_args()
 
@@ -362,6 +363,8 @@ def upload_and_validate(request_file, session, file_data, file_name, mimetype, m
                         warning("Shell was printed as plain text")
                 else:
                     warning("Shell does not seem to be interractable, make sure your upload directory is correct")
+                    if (options.manual_check):
+                        input("Manual check enabled, waiting for input...")
 
     if (message != None): failure(message, 2)
     return session
