@@ -6,6 +6,7 @@ active_modules = [
     "reverse_double_extension",
     "null_byte_cutoff",
     "name_overflow_cutoff",
+    "htaccess_overwrite",
 ]
 extensions = {
     "normal": ["jpg", "jpeg", "png", "gif", "pdf", "mp3", "mp4", "txt", "csv", "svg"],
