@@ -75,9 +75,9 @@ The entire response body will be scanned using the regex provided and if it matc
 When creating this tool I had customisations in mind, so I did my best to keep everything as cookie-cutter as possible. 
 You are able to add your own modules/rules for running tests as well as adding new file extensions.
 
-To add a module simply add a function with your desired functionality to `modules.py` then add the function by name into the list "active_modules" in `variations.py`
+To add a module simply add a function with your desired functionality to `modules.py` then add the function by name into the list "active_modules" in `config.py`
 
-To add a new file extension add the sample.{ext} file to `assets/sample_files`, then add the extension and its mimetype/magic bytes to `variations.py`
+To add a new file extension add the sample.{ext} file to `assets/sample_files`, then add the extension and its mimetype/magic bytes to `config.py`
 
 ## Test targets
 For testing purposes I also included sample .php scripts (`/test_targets`) to emulate the behaviour of upload forms. If you wish to gain a better understanding of the tool or simply want to see if it works, feel free to run tests against them.  

