@@ -31,27 +31,44 @@ The entire response body will be scanned using the regex provided and if it matc
 <details>
   <summary>Parameters</summary>
 
+    -h, --help            show this help message and exit
     -r REQUEST_FILE, --request-file REQUEST_FILE
                           Required - Read from a HTTP/S request file (replace the file content with the string *content* and filename extension with the string *filename*)
+                          Usage: -e /--request-file req.txt
     -t TRUE_REGEX, --true-regex TRUE_REGEX
                           Required - Provide the success message when a file is uploaded
                           Usage: -s /--success 'File uploaded successfully.'
     -f FALSE_REGEX, --false-regex FALSE_REGEX
                           Required - Provide a failure message when a file is uploaded
                           Usage: -f /--failure 'File is not allowed!'
+    -a ACCEPTED_EXTENSIONS, --accepted-extensions ACCEPTED_EXTENSIONS
+                          Provide allowed extensions to be uploaded, skips the in-built check
+                          Usage: -a /--accepted-extensions jpeg,png,zip
     -d UPLOAD_DIR, --upload-dir UPLOAD_DIR
-                          Provide a remote path where the WebShell will be uploaded (won't work if the file will be uploaded with a UUID).
+                          Provide a remote path where the WebShell will be uploaded (won't work if the file will be uploaded with random name).
                           Usage: -l / --location /uploads/
     --rate-limit RATE_LIMIT
                           Set rate-limiting with seconds between each request.
-                          Usage: --rate-limit 
+                          Usage: --rate-limit 0.1
     -v GLOBAL_VERBOSITY, --verbose GLOBAL_VERBOSITY
-                          If set, details about the test will be printed on the screen
-                          Usage: -v / --verbose
+                          If set, more info will be printed on the screen
+                          Usage: -v / --verbose 1|2|3
     --timeout             Number of seconds the request will wait before timing out (Default: 20)
-                          Usage: -t / --timeout
+                          Usage: --timeout
     --print-response      If set, HTTP response will be printed on the screen
                           Usage: --print-response
+    --status-codes STATUS_CODES
+                          HTTP status codes which will be treated as acceptable, default 200
+                          Usage: --status-code 200,301
+    --protocol PROTOCOL   Connection protocol to be used for uploads, default https
+                          Usage: --protocol https
+    --enable-redirects    If enabled, allows forms to redirect the requests
+                          Usage: --enable-redirects
+    --manual-check        If enabled, pauses the execution after each successful shell upload
+                          Usage: --manual-check 
+    --disable-modules DISABLE_MODULES
+                          Disables specified modules
+                          Usage: --disable-modules mimetype_spoofing,double_extension,double_extension_random_case,reverse_double_extension,null_byte_cutoff,name_overflow_cutoff,htaccess_overwrite
 </details>                  
   
 ## Customisation
@@ -63,7 +80,7 @@ To add a module simply add a function with your desired functionality to `module
 To add a new file extension add the sample.{ext} file to `assets/sample_files`, then add the extension and its mimetype/magic bytes to `variations.py`
 
 ## Test targets
-For testing purposes I also included sample .php scripts (`/test_targets`) to emulate the behaviour of upload forms. If you wish to gain a better understanding of the soft or simply want to test if it works, feel free to run tests against them.  
+For testing purposes I also included sample .php scripts (`/test_targets`) to emulate the behaviour of upload forms. If you wish to gain a better understanding of the tool or simply want to see if it works, feel free to run tests against them.  
 
 <br/>
 <br/>

