@@ -9,6 +9,7 @@ active_modules = [
     "null_byte_cutoff",
     "name_overflow_cutoff",
     "htaccess_overwrite",
+    "svg_xxe",
 ]
 extensions = {
     "normal": ["jpg", "jpeg", "png", "gif", "pdf", "mp3", "mp4", "txt", "csv", "svg"],

