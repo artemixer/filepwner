@@ -143,3 +143,4 @@ progress_bar = {
     "max": 0
 }
 protocol = "https"
+baseline_response = None
