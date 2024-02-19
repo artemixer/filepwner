@@ -25,45 +25,17 @@ function is_png($file_path) {
     return $signature === "\x89\x50\x4E\x47\x0D\x0A\x1A\x0A";
 }
 
-function is_jpg($file_path) {
-    // Open the file in binary mode
-    $file_handle = fopen($file_path, 'rb');
-
-    // Read the first 4 bytes to check the signature
-    $signature = fread($file_handle, 4);
-
-    // Close the file handle
-    fclose($file_handle);
-
-    // Check if the signature matches the JPG signature
-    return $signature === "\xFF\xD8\xFF\xE0";
-}
-
-
-function is_gif($file_path) {
-    // Open the file in binary mode
-    $file_handle = fopen($file_path, 'rb');
-
-    // Read the first 3 bytes to check the signature
-    $signature = fread($file_handle, 3);
-
-    // Close the file handle
-    fclose($file_handle);
-
-    // Check if the signature matches "GIF"
-    return $signature === "GIF";
-}
-
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES["uploadedFile"])) {
-    var_dump($_FILES);
     $targetFile = $uploadDirectory . basename($_FILES["uploadedFile"]["name"]);
+    $fileInfo = pathinfo($_FILES["uploadedFile"]["name"]);
 
-    if (!is_jpg($_FILES["uploadedFile"]["tmp_name"])) {
+    var_dump($fileInfo);
+    if ($fileInfo['extension'] != "png" || $_FILES["uploadedFile"]["type"] != "image/png" || !is_png($_FILES["uploadedFile"]["tmp_name"])) {
         echo "Error uploading file.";
         exit(1);
     }
-    
-    if (move_uploaded_file($_FILES["uploadedFile"]["tmp_name"], $targetFile)) {
+
+    if (file_put_contents($targetFile, file_get_contents($_FILES["uploadedFile"]["tmp_name"]))) {
         echo "File uploaded successfully.";
     } else {
         echo "Error uploading file.";

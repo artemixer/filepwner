@@ -12,7 +12,6 @@ error_reporting(E_ALL);
 $uploadDirectory = "uploads/";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES["uploadedFile"])) {
-    var_dump($_FILES);
     $targetFile = $uploadDirectory . basename($_FILES["uploadedFile"]["name"]);
     
     if (move_uploaded_file($_FILES["uploadedFile"]["tmp_name"], $targetFile)) {

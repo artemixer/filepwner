@@ -26,10 +26,11 @@ function is_png($file_path) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES["uploadedFile"])) {
-    var_dump($_FILES);
     $targetFile = $uploadDirectory . basename($_FILES["uploadedFile"]["name"]);
 
-    if (strpos(strtolower($_FILES["uploadedFile"]["name"]), "png") == false || $_FILES["uploadedFile"]["type"] != "image/png" || !is_png($_FILES["uploadedFile"]["tmp_name"])) {
+    $fileInfo = pathinfo($_FILES["uploadedFile"]["name"]);
+
+    if ($fileInfo['extension'] == "php") {
         echo "Error uploading file.";
         exit(1);
     }

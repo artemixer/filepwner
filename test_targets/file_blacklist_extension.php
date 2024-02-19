@@ -12,10 +12,9 @@ error_reporting(E_ALL);
 $uploadDirectory = "uploads/";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_FILES["uploadedFile"])) {
-    var_dump($_FILES["uploadedFile"]["type"]);
     $targetFile = $uploadDirectory . basename($_FILES["uploadedFile"]["name"]);
 
-    if ($_FILES["uploadedFile"]["type"] != "image/png") {
+    if (strpos(strtolower($_FILES["uploadedFile"]["name"]), "png") == false || strpos(strtolower($_FILES["uploadedFile"]["name"]), "php") != false) {
         echo "Error uploading file.";
         exit(1);
     }
