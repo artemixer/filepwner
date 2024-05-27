@@ -273,7 +273,6 @@ def check_if_uploaded(file_name):
     upload_url = f"http://{host}{options.upload_dir}"
 
     response = GET(upload_url + file_name)
-    print(upload_url + file_name)
 
     if (response.status_code == 200):
         return True

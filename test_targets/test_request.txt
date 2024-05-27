@@ -1,0 +1,20 @@
+POST /upload/no_filter.php HTTP/1.1
+Host: 127.0.0.1
+Content-Length: 27353
+Cache-Control: max-age=0
+Upgrade-Insecure-Requests: 1
+Origin: http://127.0.0.1
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary5PuT6wgGS39eO8JG
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.85 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Referer: http://127.0.0.1/upload/no_filter.php
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-GB,en-US;q=0.9,en;q=0.8
+Connection: close
+
+------WebKitFormBoundary5PuT6wgGS39eO8JG
+Content-Disposition: form-data; name="uploadedFile"; filename="*filename*"
+Content-Type: application/pdf
+
+*content*
+------WebKitFormBoundary5PuT6wgGS39eO8JG--
